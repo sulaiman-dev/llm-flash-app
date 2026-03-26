@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { SelectField } from "../components/select-field";
 import { getFlashcards } from "../lib/api";
 
 export const Route = createFileRoute("/flashcards")({
@@ -65,16 +66,13 @@ function FlashcardsPage() {
           <h2 className="text-3xl font-bold tracking-tight text-slate-900">Flashcards</h2>
           <p className="mt-2 text-sm text-slate-600">Flip, review, and move through your saved cards.</p>
         </div>
-        <label className="block">
-          <span className="label">Subject</span>
-          <select className="input min-w-52" value={subject} onChange={(e) => setSubject(e.target.value)}>
-            {subjects.map((s) => (
-              <option key={s.value || "all"} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SelectField className="min-w-52" label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)}>
+          {subjects.map((s) => (
+            <option key={s.value || "all"} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </SelectField>
       </div>
       <div className="flex items-center justify-between text-sm text-slate-500">
         <span>
@@ -82,17 +80,13 @@ function FlashcardsPage() {
         </span>
         <span>{flipped ? "Showing answer" : "Showing prompt"}</span>
       </div>
-      <button
-        type="button"
-        onClick={() => setFlipped((f) => !f)}
-        className="group block w-full text-left"
-      >
-        <div className="relative overflow-hidden rounded-[2rem] border border-brand-100 bg-gradient-to-br from-white via-brand-50 to-stone-100 p-8 shadow-[0_20px_50px_-28px_rgba(15,23,32,0.35)] transition hover:-translate-y-0.5">
-          <div className="absolute right-4 top-4 rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-brand-700 shadow-sm">
-            Tap to flip
-          </div>
-          {!flipped ? (
-            <>
+      <button type="button" onClick={() => setFlipped((f) => !f)} className="flashcard-scene block w-full text-left">
+        <div className={`flashcard-inner relative min-h-[24rem] ${flipped ? "is-flipped" : ""}`}>
+          <div className="flashcard-face absolute inset-0">
+            <div className="relative h-full overflow-hidden rounded-[2rem] border border-brand-100 bg-gradient-to-br from-white via-brand-50 to-stone-100 p-8 shadow-[0_20px_50px_-28px_rgba(15,23,32,0.35)] transition hover:-translate-y-0.5">
+              <div className="absolute right-4 top-4 rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-brand-700 shadow-sm">
+                Tap to flip
+              </div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Front</p>
               <p className="mt-5 max-w-2xl text-2xl font-semibold leading-relaxed text-slate-900 sm:text-3xl">
                 {card.front_text}
@@ -102,9 +96,13 @@ function FlashcardsPage() {
                   {card.arabic_text}
                 </p>
               ) : null}
-            </>
-          ) : (
-            <>
+            </div>
+          </div>
+          <div className="flashcard-face flashcard-face-back absolute inset-0">
+            <div className="relative h-full overflow-hidden rounded-[2rem] border border-brand-100 bg-gradient-to-br from-white via-brand-50 to-stone-100 p-8 shadow-[0_20px_50px_-28px_rgba(15,23,32,0.35)] transition hover:-translate-y-0.5">
+              <div className="absolute right-4 top-4 rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-brand-700 shadow-sm">
+                Tap to flip
+              </div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Back</p>
               <p className="mt-5 text-2xl font-semibold leading-relaxed text-slate-900">{card.back_text}</p>
               {card.transliteration ? <p className="mt-4 text-base text-slate-700">{card.transliteration}</p> : null}
@@ -117,8 +115,8 @@ function FlashcardsPage() {
                   </span>
                 ))}
               </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </button>
       <div className="flex flex-wrap gap-3">

@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { SelectField } from "../components/select-field";
 import {
   appendFlashcards,
   generateFlashcards,
@@ -98,16 +99,13 @@ function CreatePage() {
             generateMutation.mutate();
           }}
         >
-          <label>
-            <span className="label">Subject</span>
-            <select className="input" value={subject} onChange={(e) => setSubject(e.target.value)}>
-              {subjectChoices.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <SelectField label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)}>
+            {subjectChoices.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </SelectField>
           <label>
             <span className="label">Topic</span>
             <input
@@ -135,37 +133,31 @@ function CreatePage() {
             </label>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
-            <label>
-              <span className="label">AI provider</span>
-              <select
-                className="input"
-                value={provider}
-                onChange={(e) => {
-                  const next = e.target.value;
-                  setProvider(next);
-                  if (!options) return;
-                  const prov = options.providers.find((p) => p.id === next);
-                  const m = options.default_models[next] ?? prov?.models?.[0] ?? "static-seed";
-                  setModel(m);
-                }}
-              >
-                {options!.providers.map((p) => (
-                  <option key={p.id} value={p.id} disabled={!p.configured && p.id !== "fallback"}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span className="label">Model</span>
-              <select className="input" value={model} onChange={(e) => setModel(e.target.value)}>
-                {models.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <SelectField
+              label="AI provider"
+              value={provider}
+              onChange={(e) => {
+                const next = e.target.value;
+                setProvider(next);
+                if (!options) return;
+                const prov = options.providers.find((p) => p.id === next);
+                const m = options.default_models[next] ?? prov?.models?.[0] ?? "static-seed";
+                setModel(m);
+              }}
+            >
+              {options!.providers.map((p) => (
+                <option key={p.id} value={p.id} disabled={!p.configured && p.id !== "fallback"}>
+                  {p.label}
+                </option>
+              ))}
+            </SelectField>
+            <SelectField label="Model" value={model} onChange={(e) => setModel(e.target.value)}>
+              {models.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </SelectField>
           </div>
           <button className="btn-primary" type="submit" disabled={generateMutation.isPending}>
             {generateMutation.isPending ? "Generating..." : "Generate flashcards"}
