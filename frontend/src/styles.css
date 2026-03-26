@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #eef8f0;
+  --color-brand-100: #d8f0de;
+  --color-brand-200: #b5e0c0;
+  --color-brand-300: #84c999;
+  --color-brand-400: #58ae72;
+  --color-brand-500: #378b54;
+  --color-brand-600: #296f44;
+  --color-brand-700: #225739;
+  --color-brand-800: #1d4530;
+  --color-brand-900: #173929;
+  --color-accent-500: #f3b24f;
+  --color-ink-950: #0f1720;
+}
+
+@layer base {
+  html {
+    font-family:
+      Inter,
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+  }
+
+  body {
+    @apply bg-stone-50 text-slate-900 antialiased;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen bg-gradient-to-b from-brand-50 via-stone-50 to-white;
+  }
+
+  .app-container {
+    @apply mx-auto max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .surface {
+    @apply rounded-3xl border border-white/70 bg-white/85 shadow-[0_16px_50px_-24px_rgba(15,23,32,0.22)] backdrop-blur;
+  }
+
+  .soft-surface {
+    @apply rounded-2xl border border-stone-200 bg-white shadow-sm;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-stone-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100;
+  }
+
+  .label {
+    @apply mb-2 block text-sm font-medium text-slate-700;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-800;
+  }
+}

@@ -8,5 +8,10 @@ __pycache__/
 .mypy_cache/
 dist/
 build/
+.tanstack/
+.output/
 .env
-.env.local
+.env.*
+!.env.example
+!frontend/.env.example
+!backend/.env.example

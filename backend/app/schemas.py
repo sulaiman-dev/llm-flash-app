@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class Flashcard(BaseModel):
+    id: str | None = None
     subject: str = Field(examples=["arabic_letters", "duas", "facts"])
     front_text: str
     back_text: str
@@ -26,6 +27,14 @@ class GenerationRequest(BaseModel):
     topic: str
     count: int = Field(default=5, ge=1, le=20)
     age_group: str = Field(default="5-10")
+    provider: str | None = Field(
+        default=None,
+        description="Override server default: xai | fallback",
+    )
+    model: str | None = Field(
+        default=None,
+        description="Override default model for the selected provider",
+    )
 
 
 class GenerationResponse(BaseModel):
@@ -33,3 +42,22 @@ class GenerationResponse(BaseModel):
     model: str
     flashcards: list[Flashcard] = Field(default_factory=list)
     questions: list[QuizQuestion] = Field(default_factory=list)
+    used_fallback: bool = False
+    warning: str | None = None
+
+
+class ProviderOption(BaseModel):
+    id: str
+    label: str
+    configured: bool
+    models: list[str]
+
+
+class AIOptionsResponse(BaseModel):
+    default_provider: str
+    default_models: dict[str, str]
+    providers: list[ProviderOption]
+
+
+class AppendFlashcardsRequest(BaseModel):
+    flashcards: list[Flashcard]

@@ -5,7 +5,7 @@ IlmFlash is an educational app for kids to learn Islamic basics using flashcards
 ## Structure
 
 - `frontend/` TanStack Start app
-- `backend/` FastAPI API with AI provider abstraction (OpenAI or xAI)
+- `backend/` FastAPI API with xAI-powered flashcard generation
 
 ## Prerequisites
 
@@ -37,6 +37,5 @@ API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 Configure in `backend/.env`:
 
-- `AI_PROVIDER=openai` and set `OPENAI_API_KEY`
 - `AI_PROVIDER=xai` and set `XAI_API_KEY`
 - `AI_PROVIDER=fallback` for local development without API keys

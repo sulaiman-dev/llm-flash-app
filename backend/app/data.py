@@ -3,6 +3,7 @@ from app.schemas import Flashcard, QuizQuestion
 
 seed_flashcards = [
     Flashcard(
+        id="seed-arabic-alif",
         subject="arabic_letters",
         front_text="What letter is this?",
         back_text="Alif",
@@ -12,6 +13,7 @@ seed_flashcards = [
         tags=["letters", "arabic"],
     ),
     Flashcard(
+        id="seed-dua-eat",
         subject="duas",
         front_text="Dua before eating",
         back_text="Bismillah",
@@ -21,6 +23,7 @@ seed_flashcards = [
         tags=["dua", "daily"],
     ),
     Flashcard(
+        id="seed-facts-salah",
         subject="facts",
         front_text="How many daily prayers in Islam?",
         back_text="Five daily prayers",

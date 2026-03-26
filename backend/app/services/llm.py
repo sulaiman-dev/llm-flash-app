@@ -7,81 +7,82 @@ from app.schemas import Flashcard, GenerationRequest, GenerationResponse, QuizQu
 from app.services.ai_provider import AIProvider
 
 
-class OpenAIProvider(AIProvider):
-    async def generate_flashcards(self, payload: GenerationRequest) -> GenerationResponse:
-        content = await _chat_completion(
-            base_url="https://api.openai.com/v1",
-            api_key=settings.openai_api_key,
-            model=settings.openai_model,
-            prompt=_flashcard_prompt(payload),
-        )
-        parsed = _safe_json(content)
-        cards = [Flashcard(**item) for item in parsed.get("flashcards", [])]
-        return GenerationResponse(
-            provider="openai",
-            model=settings.openai_model,
-            flashcards=cards,
-        )
-
-    async def generate_quiz(self, payload: GenerationRequest) -> GenerationResponse:
-        content = await _chat_completion(
-            base_url="https://api.openai.com/v1",
-            api_key=settings.openai_api_key,
-            model=settings.openai_model,
-            prompt=_quiz_prompt(payload),
-        )
-        parsed = _safe_json(content)
-        questions = [QuizQuestion(**item) for item in parsed.get("questions", [])]
-        return GenerationResponse(
-            provider="openai",
-            model=settings.openai_model,
-            questions=questions,
-        )
-
-
 class XAIProvider(AIProvider):
     async def generate_flashcards(self, payload: GenerationRequest) -> GenerationResponse:
+        model = payload.model or settings.xai_model
         content = await _chat_completion(
+            provider_name="xai",
             base_url="https://api.x.ai/v1",
             api_key=settings.xai_api_key,
-            model=settings.xai_model,
+            model=model,
             prompt=_flashcard_prompt(payload),
+            use_json_object=False,
         )
         parsed = _safe_json(content)
-        cards = [Flashcard(**item) for item in parsed.get("flashcards", [])]
-        return GenerationResponse(provider="xai", model=settings.xai_model, flashcards=cards)
+        cards = [_flashcard_from_dict(item) for item in parsed.get("flashcards", [])]
+        return GenerationResponse(provider="xai", model=model, flashcards=cards)
 
     async def generate_quiz(self, payload: GenerationRequest) -> GenerationResponse:
+        model = payload.model or settings.xai_model
         content = await _chat_completion(
+            provider_name="xai",
             base_url="https://api.x.ai/v1",
             api_key=settings.xai_api_key,
-            model=settings.xai_model,
+            model=model,
             prompt=_quiz_prompt(payload),
+            use_json_object=False,
         )
         parsed = _safe_json(content)
         questions = [QuizQuestion(**item) for item in parsed.get("questions", [])]
-        return GenerationResponse(provider="xai", model=settings.xai_model, questions=questions)
+        return GenerationResponse(provider="xai", model=model, questions=questions)
 
 
-async def _chat_completion(base_url: str, api_key: str | None, model: str, prompt: str) -> str:
+async def _chat_completion(
+    provider_name: str,
+    base_url: str,
+    api_key: str | None,
+    model: str,
+    prompt: str,
+    *,
+    use_json_object: bool = True,
+) -> str:
     if not api_key:
         return "{}"
 
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    payload = {
+    body: dict = {
         "model": model,
         "messages": [
             {"role": "system", "content": "You generate safe educational Islamic content for kids."},
             {"role": "user", "content": prompt},
         ],
-        "temperature": 0.7,
-        "response_format": {"type": "json_object"},
+        "temperature": 0.2 if provider_name == "xai" else 0.7,
     }
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post(f"{base_url}/chat/completions", headers=headers, json=payload)
-        response.raise_for_status()
-        body = response.json()
-        return body["choices"][0]["message"]["content"]
+    if use_json_object:
+        body["response_format"] = {"type": "json_object"}
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        response = await client.post(f"{base_url}/chat/completions", headers=headers, json=body)
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            if use_json_object and exc.response is not None and exc.response.status_code == 400:
+                return await _chat_completion(
+                    provider_name=provider_name,
+                    base_url=base_url,
+                    api_key=api_key,
+                    model=model,
+                    prompt=prompt,
+                    use_json_object=False,
+                )
+            raise
+        data = response.json()
+        return data["choices"][0]["message"]["content"]
+
+
+def _flashcard_from_dict(item: dict) -> Flashcard:
+    data = dict(item)
+    data.pop("id", None)
+    return Flashcard(**data)
 
 
 def _flashcard_prompt(payload: GenerationRequest) -> str:
@@ -104,7 +105,31 @@ def _quiz_prompt(payload: GenerationRequest) -> str:
 
 
 def _safe_json(content: str) -> dict:
+    content = content.strip()
     try:
         return json.loads(content)
     except json.JSONDecodeError:
-        return {}
+        pass
+
+    if content.startswith("```"):
+        parts = content.split("```")
+        for part in parts:
+            candidate = part.strip()
+            if candidate.startswith("json"):
+                candidate = candidate[4:].strip()
+            if not candidate:
+                continue
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                continue
+
+    start = content.find("{")
+    end = content.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        try:
+            return json.loads(content[start : end + 1])
+        except json.JSONDecodeError:
+            return {}
+
+    return {}
